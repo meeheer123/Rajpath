@@ -1,0 +1,43 @@
+{% extends "booths/base.html" %}
+
+{% load static %}
+
+{% block content %}
+  <form method="POST">
+    {% csrf_token %}
+    
+    <label for="districts">Select your district:</label>
+
+    <select name="districts" id="districts">
+      <option value="0">Select a district</option>
+      {% for district in districts %}
+        <option value="{{ district.id }}">{{ district.name }}</option>
+      {% endfor %}
+    </select>
+
+    <select name="assemblies" id="assemblies">
+
+    </select>
+    
+    <button type="submit">Submit</button>
+  </form>
+  <script>
+    const district = document.getElementById('districts');
+    const assembly = document.getElementById('assemblies');
+
+    district.addEventListener('change', (event) => {
+      const districtId = event.target.value;
+      fetch(`get_assemblies/${districtId}`)
+        .then(response => response.json())
+        .then(data => {
+          assembly.innerHTML = '';
+          data.forEach(item => {
+            const option = document.createElement('option');
+            option.value = item.id;
+            option.text = item.name;
+            assembly.add(option);
+          });
+        });
+    });
+  </script>
+{% endblock %}
