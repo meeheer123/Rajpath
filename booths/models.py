@@ -27,3 +27,4 @@ class User(models.Model):
     voter_id = models.CharField(max_length=20, unique=True)
     district = models.ForeignKey(District, on_delete=models.CASCADE)
     assembly_constituency = models.ForeignKey(AssemblyConstituency, on_delete=models.CASCADE)
+    voting_booth = models.ForeignKey(VotingBooth, on_delete=models.CASCADE)

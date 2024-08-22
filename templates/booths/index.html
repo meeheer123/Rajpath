@@ -7,7 +7,6 @@
     {% csrf_token %}
     
     <label for="districts">Select your district:</label>
-
     <select name="districts" id="districts">
       <option value="0">Select a district</option>
       {% for district in districts %}
@@ -15,6 +14,7 @@
       {% endfor %}
     </select>
 
+    <label for="assemblies">Select your constituency:</label>
     <select name="assemblies" id="assemblies">
 
     </select>
@@ -23,4 +23,5 @@
   </form>
 
   <script src="{% static 'js/ajax.js' %}"></script>
+  <script src="{% static 'js/get_user_location.js' %}"></script>
 {% endblock %}
