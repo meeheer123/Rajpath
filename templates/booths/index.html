@@ -1,27 +1,32 @@
-{% extends "booths/base.html" %}
-
-{% load static %}
-
-{% block content %}
-  <form method="POST">
-    {% csrf_token %}
-    
-    <label for="districts">Select your district:</label>
-    <select name="districts" id="districts">
-      <option value="0">Select a district</option>
-      {% for district in districts %}
-        <option value="{{ district.id }}">{{ district.name }}</option>
-      {% endfor %}
-    </select>
-
-    <label for="assemblies">Select your constituency:</label>
-    <select name="assemblies" id="assemblies">
-
-    </select>
-    
-    <button type="submit">Submit</button>
-  </form>
-
-  <script src="{% static 'js/ajax.js' %}"></script>
-  <script src="{% static 'js/get_user_location.js' %}"></script>
-{% endblock %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Voting Location: Sign in</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="login-root">
+    <h1>Voting Location</h1>
+    <form id="voter-login" method="POST" action="/">
+      <div class="form-group">
+        <label for="id">Voter ID</label>
+        <input type="text" name="id" required>
+      </div>
+      <div class="form-group">
+        <label for="name">Full Name</label>
+        <input type="text" name="name" required>
+      </div>
+      <div class="form-group">
+        <input type="submit" name="submit" value="Continue">
+      </div>
+    </form>
+  </div>
+  {% if invalid_credentials %}
+  <script>
+    // Show the alert message
+    window.alert("Invalid Credentials");
+  </script>
+  {% endif %}
+</body>
+</html>
