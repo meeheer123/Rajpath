@@ -6,7 +6,7 @@ const port = 3001; // Make sure this doesn't conflict with your React app's port
 app.use(cors());
 app.use(express.json());
 
-// Mock data
+// Mock data 
 const districts = [
   { id: '1', name: 'Mumbai' },
   { id: '2', name: 'Delhi' },
