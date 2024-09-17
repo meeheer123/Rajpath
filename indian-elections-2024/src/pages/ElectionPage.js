@@ -64,7 +64,7 @@ function ElectionPage() {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (selectedDistrict && selectedConstituency) {
-      navigate('/result', { 
+      navigate('/getDetails', { 
         state: { 
           district: districts.find(d => d.id === selectedDistrict)?.name,
           constituency: constituencies.find(c => c.id === selectedConstituency)?.name
