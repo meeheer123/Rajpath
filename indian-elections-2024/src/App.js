@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import ElectionPage from './pages/ElectionPage';
 import ContactPage from './pages/ContactPage';
-import ResultPage from './pages/ResultPage';
+import ResultPage from './pages/FinalResultPage';
 import VoterDetailsForm from './pages/GetVoterDetails';
 
 function App() {
@@ -37,6 +37,7 @@ function App() {
           <Route path="/about" element={<ContactPage />} />
           <Route path="/contact" element={<ResultPage />} />
           <Route path="/getDetails" element={<VoterDetailsForm />} />
+          <Route path="/result" element={<ResultPage />} />
         </Routes>
       </div>
     </Router>

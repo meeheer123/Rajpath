@@ -66,8 +66,8 @@ function ElectionPage() {
     if (selectedDistrict && selectedConstituency) {
       navigate('/getDetails', { 
         state: { 
-          district: districts.find(d => d.id === selectedDistrict)?.name,
-          constituency: constituencies.find(c => c.id === selectedConstituency)?.name
+          district: districts.find(d => d.id == selectedDistrict)?.name,
+          constituency: constituencies.find(c => c.id == selectedConstituency)?.name
         } 
       });
     } else {

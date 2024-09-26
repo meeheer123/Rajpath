@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
 import { FaUser, FaIdCard, FaVoteYea } from 'react-icons/fa';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 const VoterDetailsForm = () => {
+  const location = useLocation();
+  const navigate = useNavigate(); // Add useNavigate
   const [name, setName] = useState('');
+  const { district, constituency } = location.state || {};
   const [voterId, setVoterId] = useState('');
   const [errors, setErrors] = useState({ name: '', voterId: '' });
 
@@ -16,8 +20,16 @@ const VoterDetailsForm = () => {
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
-      // Handle form submission here
+      // Form is valid, navigate to the results page
+      console.log(district, constituency);
       console.log('Form submitted:', { name, voterId });
+
+
+
+      // Redirect to the result page and pass necessary state
+      navigate('/result', {
+        state: { name, voterId, district, constituency },
+      });
     }
   };
 
@@ -45,7 +57,7 @@ const VoterDetailsForm = () => {
               name="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              disabled={voterId.trim() !== ''} 
+              disabled={voterId.trim() !== ''}
               className={`block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-orange-500 focus:border-orange-500 sm:text-sm rounded-md border-2 ${
                 errors.name ? 'border-red-500' : ''
               }`}
@@ -56,7 +68,6 @@ const VoterDetailsForm = () => {
             )}
           </div>
 
-          {/* OR Separator */}
           <div className="flex items-center justify-center my-4 mt-7">
             <div className="w-full border-t border-gray-300"></div>
             <span className="mx-3 text-gray-500">OR</span>
@@ -87,7 +98,7 @@ const VoterDetailsForm = () => {
 
           <button
             type="submit"
-            disabled={!name.trim() && !voterId.trim()} // Disable if both fields are empty
+            disabled={!name.trim() && !voterId.trim()}
             className={`w-full bg-gradient-to-r from-orange-500 via-orange-600 to-orange-700 text-white font-bold py-2 px-4 rounded-md transition duration-300 ease-in-out transform ${
               (!name.trim() && !voterId.trim())
                 ? 'opacity-50 cursor-not-allowed'
