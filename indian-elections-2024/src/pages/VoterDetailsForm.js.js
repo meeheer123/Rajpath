@@ -25,7 +25,6 @@ const VoterDetailsForm = () => {
       console.log('Form submitted:', { name, voterId });
 
 
-
       // Redirect to the result page and pass necessary state
       navigate('/result', {
         state: { name, voterId, district, constituency },

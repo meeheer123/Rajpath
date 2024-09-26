@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import ElectionPage from './pages/ElectionPage';
 import ContactPage from './pages/ContactPage';
 import ResultPage from './pages/FinalResultPage';
-import VoterDetailsForm from './pages/GetVoterDetails';
+import VoterDetailsForm from './pages/VoterDetailsForm.js';
 
 function App() {
   return (
@@ -33,11 +33,9 @@ function App() {
         </nav>
 
         <Routes>
-          <Route path="/" element={<ElectionPage />} />
-          <Route path="/about" element={<ContactPage />} />
-          <Route path="/contact" element={<ResultPage />} />
-          <Route path="/getDetails" element={<VoterDetailsForm />} />
-          <Route path="/result" element={<ResultPage />} />
+        <Route path="/" element={<ElectionPage />} />
+        <Route path="/getDetails" element={<VoterDetailsForm />} />
+        <Route path="/result" element={<ResultPage />} />
         </Routes>
       </div>
     </Router>
