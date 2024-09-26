@@ -4,6 +4,7 @@ import ElectionPage from './pages/ElectionPage';
 import ContactPage from './pages/ContactPage';
 import ResultPage from './pages/FinalResultPage';
 import VoterDetailsForm from './pages/VoterDetailsForm.js';
+import MatchingVotersPage from './pages/MatchingVotersPage.js';
 
 function App() {
   return (
@@ -36,6 +37,8 @@ function App() {
         <Route path="/" element={<ElectionPage />} />
         <Route path="/getDetails" element={<VoterDetailsForm />} />
         <Route path="/result" element={<ResultPage />} />
+        <Route path="/matching-voters" element={<MatchingVotersPage />} />
+        <Route path="/voting-booth" element={<ResultPage />} />
         </Routes>
       </div>
     </Router>

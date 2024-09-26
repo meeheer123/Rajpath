@@ -1,24 +1,41 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaWhatsapp, FaLink, FaMapMarkedAlt } from "react-icons/fa";
 import { useLocation } from 'react-router-dom';
+import axios from 'axios';
 
-  const VotingBoothCard = () => {
-  const location = useLocation()
+const VotingBoothCard = () => {
+  const location = useLocation();
   const [isCopied, setIsCopied] = useState(false);
-  const { name, voterId, district, constituency  } = location.state || {};
+  const [boothInfo, setBoothInfo] = useState(null);
+  const { name, voterId, district, constituency } = location.state || {};
 
-  const personName = name;
-  const votingBoothAddress = "123 Main St, Anytown, USA 12345";
-  const mapEmbedUrl = "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3022.1023192748304!2d-73.98731708459415!3d40.75895797932614!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c25855c6480299%3A0x55194ec5a1ae072e!2sTimes%20Square!5e0!3m2!1sen!2sus!4v1635445243242!5m2!1sen!2sus";
+  useEffect(() => {
+    const fetchBoothInfo = async () => {
+      try {
+        const response = await axios.get('http://127.0.0.1:3001/api/get_polling_booth_by_person_id', {
+          params: { person_id: voterId }
+        });
+        setBoothInfo(response.data);
+      } catch (error) {
+        console.error('Error fetching polling booth info:', error);
+      }
+    };
+
+    fetchBoothInfo();
+  }, [voterId]);
 
   const handleNavigate = () => {
-    window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(votingBoothAddress)}`, "_blank");
+    if (boothInfo) {
+      window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(boothInfo.polling_booth_address)}`, "_blank");
+    }
   };
 
   const handleShare = () => {
-    const shareText = `My voting booth is at: ${votingBoothAddress}`;
-    const shareUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
-    window.open(shareUrl, "_blank");
+    if (boothInfo) {
+      const shareText = `My voting booth is at: ${boothInfo.polling_booth_address}`;
+      const shareUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
+      window.open(shareUrl, "_blank");
+    }
   };
 
   const handleCopyLink = () => {
@@ -27,15 +44,19 @@ import { useLocation } from 'react-router-dom';
     setTimeout(() => setIsCopied(false), 2000);
   };
 
+  if (!boothInfo) {
+    return <div className="text-center mt-8">Loading...</div>;
+  }
+
   return (
     <div className="max-w-md mx-auto bg-white shadow-lg rounded-lg overflow-hidden my-10">
       <div className="px-6 py-4">
-        <h1 className="text-3xl font-bold mb-2 text-gray-800">{personName}</h1>
-        <p className="text-gray-600 text-sm mb-4">{votingBoothAddress}</p>
+        <h1 className="text-3xl font-bold mb-2 text-gray-800">{name}</h1>
+        <p className="text-gray-600 text-sm mb-4">{boothInfo.polling_booth_address}</p>
       </div>
       <div className="h-64 w-full">
         <iframe
-          src={mapEmbedUrl}
+          src={`https://www.google.com/maps/embed/v1/place?key=YOUR_GOOGLE_MAPS_API_KEY&q=${encodeURIComponent(boothInfo.polling_booth_address)}`}
           width="100%"
           height="100%"
           style={{ border: 0 }}

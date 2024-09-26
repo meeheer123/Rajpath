@@ -175,7 +175,8 @@ def find_people():
 def get_polling_booth_by_person_id():
     person_id = request.args.get('person_id')
 
-    person = Person.query.filter_by(id=person_id).first()
+    person = Person.query.filter_by(voter_id=person_id).first()
+
     if not person:
         return jsonify({'error': 'Person not found'}), 404
 

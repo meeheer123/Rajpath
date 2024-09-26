@@ -1,16 +1,17 @@
 import React, { useState } from 'react';
 import { FaUser, FaIdCard, FaVoteYea } from 'react-icons/fa';
 import { useLocation, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const VoterDetailsForm = () => {
   const location = useLocation();
-  const navigate = useNavigate(); // Add useNavigate
+  const navigate = useNavigate();
   const [name, setName] = useState('');
   const { district, constituency } = location.state || {};
   const [voterId, setVoterId] = useState('');
   const [errors, setErrors] = useState({ name: '', voterId: '' });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const newErrors = {};
     if (!name.trim() && !voterId.trim()) {
@@ -20,15 +21,17 @@ const VoterDetailsForm = () => {
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
-      // Form is valid, navigate to the results page
-      console.log(district, constituency);
-      console.log('Form submitted:', { name, voterId });
-
-
-      // Redirect to the result page and pass necessary state
-      navigate('/result', {
-        state: { name, voterId, district, constituency },
-      });
+      try {
+        const response = await axios.get('http://127.0.0.1:3001/api/find_people', {
+          params: { name, district, constituency }
+        });
+        navigate('/matching-voters', {
+          state: { matchingVoters: response.data, district, constituency }
+        });
+      } catch (error) {
+        console.error('Error fetching matching voters:', error);
+        setErrors({ submit: 'Error fetching data. Please try again.' });
+      }
     }
   };
 
