@@ -1,3 +1,0 @@
-- wrong name gives you (please fix yuor details) i need it to say User not found
-- using voter id does not work
-- wrong voter id should give voter_id invalid or voter not in current list

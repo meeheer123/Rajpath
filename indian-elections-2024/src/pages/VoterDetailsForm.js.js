@@ -9,28 +9,43 @@ const VoterDetailsForm = () => {
   const [name, setName] = useState('');
   const { district, constituency } = location.state || {};
   const [voterId, setVoterId] = useState('');
-  const [errors, setErrors] = useState({ name: '', voterId: '' });
+  const [errors, setErrors] = useState({ name: '', voterId: '', submit: '' });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const newErrors = {};
+
+    // Validate that either name or voter ID is provided
     if (!name.trim() && !voterId.trim()) {
       newErrors.name = 'Either Name or Voter ID is required';
       newErrors.voterId = 'Either Name or Voter ID is required';
     }
+
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
       try {
-        const response = await axios.get('http://127.0.0.1:3001/api/find_people', {
-          params: { name, district, constituency }
-        });
+        // Construct the params based on the available input
+        const params = {
+          district,
+          constituency
+        };
+        if (name.trim()) {
+          params.name = name.trim();
+        }
+        if (voterId.trim()) {
+          params.voterId = voterId.trim();
+        }
+
+        // Make the API call
+        const response = await axios.get('http://127.0.0.1:3001/api/find_people', { params });
+
         navigate('/matching-voters', {
           state: { matchingVoters: response.data, district, constituency }
         });
       } catch (error) {
-        console.error('Error fetching matching voters:', error);
-        setErrors({ submit: 'Error fetching data. Please try again.' });
+        console.error('No Such Record Was Found:', error);
+        setErrors({ submit: 'No Such Record Was Found.' });
       }
     }
   };
@@ -44,9 +59,11 @@ const VoterDetailsForm = () => {
         </h1>
 
         {Object.values(errors).some(err => err) && (
-          <p className="text-red-500 text-center mb-4">Please fix the errors below.</p>
+          <p className="text-red-500 text-center mb-4">
+            {Object.values(errors).find(err => err)}
+          </p>
         )}
-
+        
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1 flex items-center">

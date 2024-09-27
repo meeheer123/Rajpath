@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, redirect
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from sqlalchemy import text
@@ -139,36 +139,44 @@ def get_constituencies():
 @app.route('/api/find_people', methods=['GET'])
 def find_people():
     name = request.args.get('name')
-    constituency_name = request.args.get('constituency')
-    district_name = request.args.get('district')
+    voter_id = request.args.get('voterId')
+    district = request.args.get('district')
+    constituency = request.args.get('constituency')
 
-    # Find the district
-    district = District.query.filter_by(name=district_name).first()
-    if not district:
-        return jsonify({'error': 'District not found'}), 404
+    query = db.session.query(Person).join(PollingBooth).join(Constituency).join(District)
 
-    # Find the constituency
-    constituency = Constituency.query.filter_by(name=constituency_name, district_id=district.id).first()
-    if not constituency:
-        return jsonify({'error': 'Constituency not found in this district'}), 404
+    # Filter by district and constituency
+    if district:
+        query = query.filter(District.name == district)
+    if constituency:
+        query = query.filter(Constituency.name == constituency)
 
-    # Find all people with the same name in the same constituency
-    people = Person.query.filter_by(name=name).join(PollingBooth).filter(
-        PollingBooth.constituency_id == constituency.id
-    ).all()
+    # Filter by voter ID or name
+    if voter_id:
+        query = query.filter(Person.voter_id == voter_id)
+    elif name:
+        query = query.filter(Person.name.ilike(f'%{name}%'))
 
-    if not people:
-        return jsonify({'error': 'No people found with this name in the constituency'}), 404
+    # Fetch results
+    matching_people = query.all()
 
-    # Return details for selection if multiple people found
-    return jsonify([{
-        'id': person.id,
-        'name': person.name,
-        'age': person.age,
-        'gender': person.gender,
-        'voter_id': person.voter_id,
-        'address': person.address
-    } for person in people])
+    if not matching_people:
+        return jsonify({'error': 'No Such Record Was Found'}), 404
+
+    # Format the results to return the person details
+    result = [
+        {
+            'name': person.name,
+            'age': person.age,
+            'gender': person.gender,
+            'address': person.address,
+            'voter_id': person.voter_id,
+            'polling_booth': person.polling_booth.address
+        }
+        for person in matching_people
+    ]
+
+    return jsonify(result)
 
 # Route to get polling booth by person ID
 @app.route('/api/get_polling_booth_by_person_id', methods=['GET'])
