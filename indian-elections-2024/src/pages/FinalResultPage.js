@@ -39,7 +39,7 @@ const VotingBoothCard = () => {
   };
 
   const handleCopyLink = () => {
-    navigator.clipboard.writeText(window.location.href);
+    navigator.clipboard.writeText(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(boothInfo.polling_booth_address)}`);
     setIsCopied(true);
     setTimeout(() => setIsCopied(false), 2000);
   };
@@ -55,16 +55,15 @@ const VotingBoothCard = () => {
         <p className="text-gray-600 text-sm mb-4">{boothInfo.polling_booth_address}</p>
       </div>
       <div className="h-64 w-full">
-        <iframe
-          src={`https://www.google.com/maps/embed/v1/place?key=YOUR_GOOGLE_MAPS_API_KEY&q=${encodeURIComponent(boothInfo.polling_booth_address)}`}
-          width="100%"
-          height="100%"
-          style={{ border: 0 }}
-          allowFullScreen=""
-          loading="lazy"
-          referrerPolicy="no-referrer-when-downgrade"
-          title="Voting Booth Location"
-        ></iframe>
+      <iframe
+        src={`https://www.google.com/maps?q=${encodeURIComponent(boothInfo.polling_booth_address)}&output=embed`}
+        width="100%"
+        height="100%"
+        style={{ border: 0 }}
+        allowFullScreen=""
+        loading="lazy"
+        title="Voting Booth Location"
+      ></iframe>
       </div>
       <div className="px-6 py-4">
         <button
