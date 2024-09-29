@@ -12,7 +12,7 @@ const VotingBoothCard = () => {
   useEffect(() => {
     const fetchBoothInfo = async () => {
       try {
-        const response = await axios.get('http://127.0.0.1:3001/api/get_polling_booth_by_person_id', {
+        const response = await axios.get('https://rajpathbackend.vercel.app/api/get_polling_booth_by_person_id', {
           params: { person_id: voterId }
         });
         setBoothInfo(response.data);

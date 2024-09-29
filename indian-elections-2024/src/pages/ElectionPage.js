@@ -20,7 +20,7 @@ function ElectionPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch('http://127.0.0.1:3001/api/districts');
+      const response = await fetch('https://rajpathbackend.vercel.app/api/districts');
       if (!response.ok) {
         throw new Error('Failed to fetch districts');
       }
@@ -37,7 +37,7 @@ function ElectionPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch(`http://127.0.0.1:3001/api/constituencies?district=${districtId}`);
+      const response = await fetch(`https://rajpathbackend.vercel.app/api/constituencies?district=${districtId}`);
       if (!response.ok) {
         throw new Error('Failed to fetch constituencies');
       }

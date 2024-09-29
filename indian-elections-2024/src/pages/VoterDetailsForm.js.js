@@ -38,7 +38,7 @@ const VoterDetailsForm = () => {
         }
 
         // Make the API call
-        const response = await axios.get('http://127.0.0.1:3001/api/find_people', { params });
+        const response = await axios.get('https://rajpathbackend.vercel.app/api/find_people', { params });
 
         navigate('/matching-voters', {
           state: { matchingVoters: response.data, district, constituency }
