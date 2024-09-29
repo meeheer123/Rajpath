@@ -47,76 +47,84 @@ def populate_data():
     
     if nagpur_district is None:
         # Insert Nagpur district
-        db.session.execute(text("INSERT INTO district (name) VALUES ('Nagpur')"))
-        db.session.commit()  # Commit after insert
+        nagpur_district = District(name='Nagpur')
+        db.session.add(nagpur_district)
+        db.session.commit()
 
-        # Get the ID of the newly inserted Nagpur district
-        nagpur_district = db.session.query(District).filter_by(name='Nagpur').first()
-
-    # Check for constituencies
+    # Insert constituencies
     constituencies = [
-        'Nagpur South',
-        'Nagpur West',
-        'Nagpur North',
-        'Nagpur Central',
-        'Nagpur East',
-        'Nagpur Rural',
-        'Katol',
-        'Hingna',
-        'Umred'
+        {'name': 'Nagpur South', 'district_id': nagpur_district.id},
+        {'name': 'Nagpur West', 'district_id': nagpur_district.id},
+        {'name': 'Nagpur North', 'district_id': nagpur_district.id},
+        {'name': 'Nagpur Central', 'district_id': nagpur_district.id},
+        {'name': 'Nagpur East', 'district_id': nagpur_district.id}
     ]
-
-    for name in constituencies:
-        existing_constituency = db.session.query(Constituency).filter_by(name=name, district_id=nagpur_district.id).first()
-        if existing_constituency is None:
-            db.session.execute(
-                text("INSERT INTO constituency (name, district_id) VALUES (:name, :district_id)"),
-                {'name': name, 'district_id': nagpur_district.id}
-            )
     
-    db.session.commit()  # Commit the changes after inserting constituencies
+    for const in constituencies:
+        existing_const = db.session.query(Constituency).filter_by(name=const['name'], district_id=nagpur_district.id).first()
+        if not existing_const:
+            new_const = Constituency(name=const['name'], district_id=const['district_id'])
+            db.session.add(new_const)
+    
+    db.session.commit()
 
-    # Get Nagpur Central constituency to add polling booths
+    # Insert polling booths for Nagpur Central constituency
     nagpur_central = db.session.query(Constituency).filter_by(name='Nagpur Central').first()
 
-    # Polling booths data
     polling_booths = [
-        {'address': 'Booth 1, Central Street', 'latitude': 21.146, 'longitude': 79.088, 'constituency_id': nagpur_central.id},
-        {'address': 'Booth 2, Main Road', 'latitude': 21.145, 'longitude': 79.091, 'constituency_id': nagpur_central.id}
+        {'address': 'Booth 1, Central Avenue', 'latitude': 21.146, 'longitude': 79.088, 'constituency_id': nagpur_central.id},
+        {'address': 'Booth 2, Main Bazar Road', 'latitude': 21.145, 'longitude': 79.091, 'constituency_id': nagpur_central.id}
     ]
 
     for booth in polling_booths:
-        # Check if polling booth already exists
         existing_booth = db.session.query(PollingBooth).filter_by(address=booth['address'], constituency_id=booth['constituency_id']).first()
-        if existing_booth is None:
-            db.session.execute(
-                text("INSERT INTO polling_booth (address, latitude, longitude, constituency_id) VALUES (:address, :latitude, :longitude, :constituency_id)"),
-                booth
+        if not existing_booth:
+            new_booth = PollingBooth(
+                address=booth['address'],
+                latitude=booth['latitude'],
+                longitude=booth['longitude'],
+                constituency_id=booth['constituency_id']
             )
+            db.session.add(new_booth)
     
-    db.session.commit()  # Commit the polling booths
+    db.session.commit()
 
-    # Get polling booths to add people
-    booth1 = db.session.query(PollingBooth).filter_by(address='Booth 1, Central Street').first()
-    booth2 = db.session.query(PollingBooth).filter_by(address='Booth 2, Main Road').first()
+    # Get the inserted polling booths
+    booth1 = db.session.query(PollingBooth).filter_by(address='Booth 1, Central Avenue').first()
+    booth2 = db.session.query(PollingBooth).filter_by(address='Booth 2, Main Bazar Road').first()
 
-    # People data
+    # Insert people with some conflicting data
     people = [
-        {'name': 'John Doe', 'age': 45, 'gender': 'Male', 'address': '123 Main Street', 'voter_id': 'VTR001', 'polling_booth_id': booth1.id},
-        {'name': 'Jane Doe', 'age': 42, 'gender': 'Female', 'address': '456 Central Avenue', 'voter_id': 'VTR002', 'polling_booth_id': booth1.id},
-        {'name': 'Alex Smith', 'age': 36, 'gender': 'Male', 'address': '789 West Road', 'voter_id': 'VTR003', 'polling_booth_id': booth2.id}
+        # Non-conflicting people
+        {'name': 'Ravi Sharma', 'age': 50, 'gender': 'Male', 'address': '123 Civil Lines', 'voter_id': 'IND001', 'polling_booth_id': booth1.id},
+        {'name': 'Meena Sharma', 'age': 45, 'gender': 'Female', 'address': '123 Civil Lines', 'voter_id': 'IND002', 'polling_booth_id': booth1.id},
+        
+        # Conflicting people with same names but different voter IDs, ages, and addresses
+        {'name': 'Amit Verma', 'age': 35, 'gender': 'Male', 'address': '456 Ram Nagar', 'voter_id': 'IND003', 'polling_booth_id': booth2.id},
+        {'name': 'Amit Verma', 'age': 42, 'gender': 'Male', 'address': '999 West Avenue', 'voter_id': 'IND004', 'polling_booth_id': booth1.id},
+        
+        {'name': 'Priya Rao', 'age': 30, 'gender': 'Female', 'address': '789 Shanti Colony', 'voter_id': 'IND005', 'polling_booth_id': booth2.id},
+        {'name': 'Priya Rao', 'age': 34, 'gender': 'Female', 'address': '321 East Park', 'voter_id': 'IND006', 'polling_booth_id': booth1.id},
+
+        # More conflicts for good measure
+        {'name': 'Rajesh Gupta', 'age': 40, 'gender': 'Male', 'address': '111 Central Plaza', 'voter_id': 'IND007', 'polling_booth_id': booth2.id},
+        {'name': 'Rajesh Gupta', 'age': 50, 'gender': 'Male', 'address': '222 Market Street', 'voter_id': 'IND008', 'polling_booth_id': booth1.id}
     ]
 
     for person in people:
-        # Check if person already exists
         existing_person = db.session.query(Person).filter_by(voter_id=person['voter_id']).first()
-        if existing_person is None:
-            db.session.execute(
-                text("INSERT INTO person (name, age, gender, address, voter_id, polling_booth_id) VALUES (:name, :age, :gender, :address, :voter_id, :polling_booth_id)"),
-                person
+        if not existing_person:
+            new_person = Person(
+                name=person['name'],
+                age=person['age'],
+                gender=person['gender'],
+                address=person['address'],
+                voter_id=person['voter_id'],
+                polling_booth_id=person['polling_booth_id']
             )
+            db.session.add(new_person)
 
-    db.session.commit()  # Commit the people
+    db.session.commit()
 
     return jsonify({'message': 'Data populated successfully'})
 
