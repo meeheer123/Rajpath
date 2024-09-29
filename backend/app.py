@@ -1,13 +1,17 @@
-from flask import Flask, jsonify, request, redirect
+from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
-from sqlalchemy import text
+import os
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
 
-# SQLite database configuration
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///districts.db'
+# Supabase PostgreSQL database configuration
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
@@ -42,16 +46,13 @@ class Person(db.Model):
 
 # Route to populate data
 def populate_data():
-    # Check if the Nagpur district already exists
     nagpur_district = db.session.query(District).filter_by(name='Nagpur').first()
     
     if nagpur_district is None:
-        # Insert Nagpur district
         nagpur_district = District(name='Nagpur')
         db.session.add(nagpur_district)
         db.session.commit()
 
-    # Insert constituencies
     constituencies = [
         {'name': 'Nagpur South', 'district_id': nagpur_district.id},
         {'name': 'Nagpur West', 'district_id': nagpur_district.id},
@@ -68,12 +69,11 @@ def populate_data():
     
     db.session.commit()
 
-    # Insert polling booths for Nagpur Central constituency
     nagpur_central = db.session.query(Constituency).filter_by(name='Nagpur Central').first()
 
     polling_booths = [
-        {'address': 'Booth 1, Central Avenue', 'latitude': 21.146, 'longitude': 79.088, 'constituency_id': nagpur_central.id},
-        {'address': 'Booth 2, Main Bazar Road', 'latitude': 21.145, 'longitude': 79.091, 'constituency_id': nagpur_central.id}
+        {'address': 'Saraswati Vidyalaya, Central Avenue, Nagpur', 'latitude': 21.146632, 'longitude': 79.088860, 'constituency_id': nagpur_central.id},
+        {'address': 'Vivekanand Vidyalaya, Main Bazar Road, Nagpur', 'latitude': 21.145671, 'longitude': 79.091728, 'constituency_id': nagpur_central.id}
     ]
 
     for booth in polling_booths:
@@ -89,26 +89,14 @@ def populate_data():
     
     db.session.commit()
 
-    # Get the inserted polling booths
-    booth1 = db.session.query(PollingBooth).filter_by(address='Booth 1, Central Avenue').first()
-    booth2 = db.session.query(PollingBooth).filter_by(address='Booth 2, Main Bazar Road').first()
+    booth1 = db.session.query(PollingBooth).filter_by(address='Saraswati Vidyalaya, Central Avenue, Nagpur').first()
+    booth2 = db.session.query(PollingBooth).filter_by(address='Vivekanand Vidyalaya, Main Bazar Road, Nagpur').first()
 
-    # Insert people with some conflicting data
     people = [
-        # Non-conflicting people
-        {'name': 'Ravi Sharma', 'age': 50, 'gender': 'Male', 'address': '123 Civil Lines', 'voter_id': 'IND001', 'polling_booth_id': booth1.id},
-        {'name': 'Meena Sharma', 'age': 45, 'gender': 'Female', 'address': '123 Civil Lines', 'voter_id': 'IND002', 'polling_booth_id': booth1.id},
-        
-        # Conflicting people with same names but different voter IDs, ages, and addresses
-        {'name': 'Amit Verma', 'age': 35, 'gender': 'Male', 'address': '456 Ram Nagar', 'voter_id': 'IND003', 'polling_booth_id': booth2.id},
-        {'name': 'Amit Verma', 'age': 42, 'gender': 'Male', 'address': '999 West Avenue', 'voter_id': 'IND004', 'polling_booth_id': booth1.id},
-        
-        {'name': 'Priya Rao', 'age': 30, 'gender': 'Female', 'address': '789 Shanti Colony', 'voter_id': 'IND005', 'polling_booth_id': booth2.id},
-        {'name': 'Priya Rao', 'age': 34, 'gender': 'Female', 'address': '321 East Park', 'voter_id': 'IND006', 'polling_booth_id': booth1.id},
-
-        # More conflicts for good measure
-        {'name': 'Rajesh Gupta', 'age': 40, 'gender': 'Male', 'address': '111 Central Plaza', 'voter_id': 'IND007', 'polling_booth_id': booth2.id},
-        {'name': 'Rajesh Gupta', 'age': 50, 'gender': 'Male', 'address': '222 Market Street', 'voter_id': 'IND008', 'polling_booth_id': booth1.id}
+        {'name': 'Ravi Sharma', 'age': 50, 'gender': 'Male', 'address': '123 Civil Lines, Nagpur', 'voter_id': 'IND001', 'polling_booth_id': booth1.id},
+        {'name': 'Meena Sharma', 'age': 45, 'gender': 'Female', 'address': '123 Civil Lines, Nagpur', 'voter_id': 'IND002', 'polling_booth_id': booth1.id},
+        {'name': 'Amit Verma', 'age': 35, 'gender': 'Male', 'address': '456 Ram Nagar, Nagpur', 'voter_id': 'IND003', 'polling_booth_id': booth2.id},
+        {'name': 'Amit Verma', 'age': 42, 'gender': 'Male', 'address': '999 West Avenue, Nagpur', 'voter_id': 'IND004', 'polling_booth_id': booth1.id}
     ]
 
     for person in people:
@@ -127,7 +115,6 @@ def populate_data():
     db.session.commit()
 
     return jsonify({'message': 'Data populated successfully'})
-
 
 # Routes to fetch data
 @app.route('/api/districts')
@@ -153,25 +140,21 @@ def find_people():
 
     query = db.session.query(Person).join(PollingBooth).join(Constituency).join(District)
 
-    # Filter by district and constituency
     if district:
         query = query.filter(District.name == district)
     if constituency:
         query = query.filter(Constituency.name == constituency)
 
-    # Filter by voter ID or name
     if voter_id:
         query = query.filter(Person.voter_id == voter_id)
     elif name:
         query = query.filter(Person.name.ilike(f'%{name}%'))
 
-    # Fetch results
     matching_people = query.all()
 
     if not matching_people:
         return jsonify({'error': 'No Such Record Was Found'}), 404
 
-    # Format the results to return the person details
     result = [
         {
             'name': person.name,
@@ -186,7 +169,6 @@ def find_people():
 
     return jsonify(result)
 
-# Route to get polling booth by person ID
 @app.route('/api/get_polling_booth_by_person_id', methods=['GET'])
 def get_polling_booth_by_person_id():
     person_id = request.args.get('person_id')
@@ -207,9 +189,9 @@ def get_polling_booth_by_person_id():
     else:
         return jsonify({'error': 'Polling booth not found'}), 404
 
+
 if __name__ == '__main__':
-    # Create the SQLite database tables before running the app
     with app.app_context():
-        db.create_all()  # Ensures the tables are created
-        populate_data()  # Populates the data inside app context
-    app.run(port=3001, debug=True)
+        db.create_all()
+        populate_data()
+    app.run(port=3001, debug=False)

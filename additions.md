@@ -1,2 +1,2 @@
-- Add sample data
+- use supabase database
 - add pagination
